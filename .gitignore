@@ -1,0 +1,61 @@
+# -------------------------
+# Python / FastAPI Project
+# -------------------------
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# macOS system files
+.DS_Store
+
+# Editor/IDE folders
+.vscode/
+.idea/
+
+# Model artifacts (large files) — keep out of git unless you use LFS
+model/*.pkl
+model/*.joblib
+model/*.sav
+model/*.h5
+
+# Logs
+*.log
+logs/
+
+# Uvicorn / FastAPI temp files
+*.pid
+
+# Python build artifacts
+build/
+dist/
+*.egg-info/
+
+# Environment variables
+.env
+.env.*
+
+# pytest cache
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# Type checking caches
+.mypy_cache/
+
+# SQLite / local DBs (optional)
+*.db
+*.sqlite3
