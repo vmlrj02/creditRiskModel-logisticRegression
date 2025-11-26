@@ -14,8 +14,8 @@ import sys
 # Project root = two levels up from this file (CreditRiskModel/)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MODEL_PATH = BASE_DIR / "model" / "logistic_credit_model.pkl"
-SCALER_PATH = BASE_DIR / "model" / "scaler.pkl"
+MODEL_PATH  = BASE_DIR / "model" / "logistic_credit_model.joblib"
+SCALER_PATH = BASE_DIR / "model" / "scaler.joblib"
 COLUMNS_PATH = BASE_DIR / "model" / "train_columns.json"
 
 # Helpful debug if things fail when starting via uvicorn
