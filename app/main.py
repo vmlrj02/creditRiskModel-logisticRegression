@@ -6,45 +6,67 @@ import numpy as np
 import joblib
 import json
 from pathlib import Path
-import sys
+import boto3
 
 # ==============================
-# Resolve paths (robust)
+# Paths
 # ==============================
-# Project root = two levels up from this file (CreditRiskModel/)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MODEL_PATH  = BASE_DIR / "model" / "logistic_credit_model.joblib"
-SCALER_PATH = BASE_DIR / "model" / "scaler.joblib"
-COLUMNS_PATH = BASE_DIR / "model" / "train_columns.json"
+# Local cache directory for S3 downloads
+LOCAL_MODEL_DIR = BASE_DIR / "model_cache"
+LOCAL_MODEL_DIR.mkdir(exist_ok=True)
 
-# Helpful debug if things fail when starting via uvicorn
-# (you can comment out the print statements later)
-print("DEBUG: BASE_DIR =", BASE_DIR)
-print("DEBUG: MODEL_PATH =", MODEL_PATH)
-print("DEBUG: SCALER_PATH =", SCALER_PATH)
-print("DEBUG: COLUMNS_PATH =", COLUMNS_PATH)
+LOCAL_MODEL_PATH   = LOCAL_MODEL_DIR / "logistic_credit_model.joblib"
+LOCAL_SCALER_PATH  = LOCAL_MODEL_DIR / "scaler.joblib"
+LOCAL_COLUMNS_PATH = LOCAL_MODEL_DIR / "train_columns.json"
 
-if not MODEL_PATH.exists():
-    raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
+# ==============================
+# S3 CONFIG  👉 EDIT THESE
+# ==============================
+S3_BUCKET_NAME = "credit-risk-model-vimal-2025"  
 
-if not SCALER_PATH.exists():
-    raise FileNotFoundError(f"Scaler not found at {SCALER_PATH}")
+S3_MODEL_KEY   = "model/logistic_credit_model.joblib"
+S3_SCALER_KEY  = "model/scaler.joblib"
+S3_COLUMNS_KEY = "model/train_columns.json"
 
-if not COLUMNS_PATH.exists():
-    raise FileNotFoundError(f"Missing {COLUMNS_PATH}. You need to save training column names (see instructions).")
+# ==============================
+# Download from S3 if not present
+# ==============================
+def download_from_s3_if_not_exists():
+    s3 = boto3.client("s3")
 
-# load files
-model = joblib.load(MODEL_PATH)
-scaler = joblib.load(SCALER_PATH)
+    if not LOCAL_MODEL_PATH.exists():
+        print("Downloading model from S3...")
+        s3.download_file(S3_BUCKET_NAME, S3_MODEL_KEY, str(LOCAL_MODEL_PATH))
 
-with open(COLUMNS_PATH, "r") as f:
+    if not LOCAL_SCALER_PATH.exists():
+        print("Downloading scaler from S3...")
+        s3.download_file(S3_BUCKET_NAME, S3_SCALER_KEY, str(LOCAL_SCALER_PATH))
+
+    if not LOCAL_COLUMNS_PATH.exists():
+        print("Downloading columns from S3...")
+        s3.download_file(S3_BUCKET_NAME, S3_COLUMNS_KEY, str(LOCAL_COLUMNS_PATH))
+
+# ==============================
+# Load model at startup
+# ==============================
+download_from_s3_if_not_exists()
+
+print("DEBUG: LOCAL_MODEL_PATH =", LOCAL_MODEL_PATH)
+print("DEBUG: LOCAL_SCALER_PATH =", LOCAL_SCALER_PATH)
+print("DEBUG: LOCAL_COLUMNS_PATH =", LOCAL_COLUMNS_PATH)
+
+model = joblib.load(LOCAL_MODEL_PATH)
+scaler = joblib.load(LOCAL_SCALER_PATH)
+
+with open(LOCAL_COLUMNS_PATH, "r") as f:
     train_columns = json.load(f)
 
 # ==============================
 # FastAPI setup
 # ==============================
-app = FastAPI(title="Credit Risk Model API")
+app = FastAPI(title="Credit Risk Model API (S3-backed)")
 
 class CreditData(BaseModel):
     data: dict  # expects a dict with column_name: value
