@@ -145,9 +145,35 @@ This project demonstrates:
 
 ---
 
-## 📈 Optional Future Improvements
-- Add SHAP explainability  
-- Add unit tests  
-- Add CI/CD  
-- Deploy to Render / Railway  
-- Add Dockerfile  
+🔁 How to Start It Again (When You Need It)
+
+Whenever you want to bring your API back online:
+
+Go to AWS → EC2 → Instances
+
+Select your instance
+
+Click Instance state → Start instance
+
+Wait until:
+
+✅ State = Running
+
+✅ Status checks = 3/3
+
+Copy the NEW Public IP (it usually changes)
+
+SSH again:
+
+ssh -i ~/keys/credit-risk-key.pem ec2-user@NEW_PUBLIC_IP
+
+
+Start your API:
+
+cd ~/creditRiskModel-logisticRegression
+nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+
+
+Then your new live URL will be:
+
+http://NEW_PUBLIC_IP:8000/docs
